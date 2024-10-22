@@ -1,11 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IERC20.sol";
+import "./ABCDFToken.sol";
 
+struct Item {
+    uint256 price;
+    uint256 quantity;
+    string name;
+    bool exists;
+}
+
+struct ItemInStock {
+    bytes32 uid;
+    uint256 price;
+    uint256 quantity;
+    string name;
+}
+
+struct BoughtItem {
+    bytes32 uniqueId;
+    uint256 numOfPurchasedItems;
+    string deliveryAddress;
+}
 
 contract SomeShop {
-    IERC20 token;
+    mapping(bytes32 => Item) public items;
+    bytes32[] public uniqueIds;
+    mapping(address => BoughtItem[]) public buyers;
+    ABCDFToken public token;
     address owner;
 
     modifier onlyOwner {
@@ -14,39 +36,41 @@ contract SomeShop {
     }
 
     constructor(address _token) {
-        token = IERC20(_token);
+        token = ABCDFToken(_token);
         owner = msg.sender;
     }
 
-    function buy() pubic payable {
-        uint amount  = msg.value; // wei
+    function addItem(uint _price, uint _quantity, string calldata _name)  external onlyOwner returns(bytes32 uid) {
+        uid = keccak256(abi.encode(_price,_name ));
 
-        require(amount >= 1);
+        items[uid] = Item({
+            uid: uid,
+            price: _price,
+            quantity: _quantity,
+            name: _name
+        });
 
-        uint currentBalance = token.balanceOf(address(this));
-
-        require(currentBalance >= amount);
-
-        token.transfer(msg.sender, amount);
+        uniqueIds.push(uid);
     }
 
-    function sell(uint _amount) pubic {
-        require(address(this).balance >= _amount);
+    function buy(bytes32 _uid, uint _numOfItems, string calldata _address) external {
+        Item storage itemToBuy = items[_uid];
 
-        require(token.allowance(msg.sender, address(this)) >= _amount);
+        require(itemToBuy.exists);
+        require(itemToBuy.quantity >= _numOfItems);
 
-        token.transferFrom(msg.sender, address(this), _amount);
+        uint totalPrice = _numOfItems * itemToBuy.price;
 
-        (bool ok, ) = msg.sender.call{value: _amount}("");
+        token.transferFrom(msg.sender, address(this), totalPrice);
 
-        require(ok, "cant send funds");
-    }
+        itemToBuy.quantity -= _numOfItems;
 
-    function topUp(uint _amount) external payable onlyOwner {
-
-    }
-
-    receive() external payable {
-        buy();
+        buyers[msg.sender] .push(
+            BoughtItem({
+                 uniqueId: _uid,
+                 numOfPurchasedItems: _numOfItems,
+                 deliveryAddress: _address
+            })
+        );
     }
 }
