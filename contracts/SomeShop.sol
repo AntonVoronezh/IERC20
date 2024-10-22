@@ -73,4 +73,34 @@ contract SomeShop {
             })
         );
     }
+
+    function availableItems(uint _page, uint _count)  external view returns(ItemInStock[] memory) {
+        require(_page > 0 && _count > 0);
+
+        uint totalItems = uniqueIds.length;
+
+        ItemInStock[] memory stockItems = new ItemInStock[](_count);
+
+        uint counter;
+
+        for(uint i = _count * _page - _count; i < _count * _page; ++i) {
+            if(i >= totalItems) {
+                break;
+            }
+
+            bytes32 currenId = uniqueIds[i];
+            Item storage currentItem = items[currenId];
+
+            stockItems[counter] = Item({
+                uid: currenId,
+                price: currentItem.price,
+                quantity: currentItem.quantity,
+                name: currentItem.name
+            });
+
+            counter++;
+        }
+
+        return stockItems;
+    }
 }
