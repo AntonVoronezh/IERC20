@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "./IERC20Metadata.sol";
 import "./IERC20.sol";
 
-absctact contract ERC20 is IERC20, IERC20Metadata {
+abstract contract ERC20 is IERC20, IERC20Metadata {
     mapping(address account => uint256) private _balances;
     mapping(address account => mapping(address spender => uint256)) private _allowances;
     uint256 private _totalSupply;
@@ -122,5 +122,15 @@ absctact contract ERC20 is IERC20, IERC20Metadata {
         }
     }
 
+    function _mint(address _account, uint256 _value) internal {
+        require(_account != address(0));
 
+        _update(address(0), _account, _value);
+    }
+
+    function _burn(address _account, uint256 _value) internal {
+        require(_account != address(0));
+
+        _update(_account, address(0), _value);
+    }
 }
