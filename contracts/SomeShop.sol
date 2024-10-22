@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "./IERC20.sol";
 
 
-contract TokenExchange {
+contract SomeShop {
     IERC20 token;
     address owner;
 
