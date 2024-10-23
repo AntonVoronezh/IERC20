@@ -40,17 +40,19 @@ contract SomeShop {
         owner = msg.sender;
     }
 
-    function addItem(uint _price, uint _quantity, string calldata _name)  external onlyOwner returns(bytes32 uid) {
-        uid = keccak256(abi.encode(_price,_name ));
+    function addItem(uint _price, uint _quantity, string calldata _name)  external onlyOwner returns(bytes32) {
+        bytes32 uid = keccak256(abi.encode(_price, _name));
 
         items[uid] = Item({
-            uid: uid,
             price: _price,
             quantity: _quantity,
-            name: _name
+            name: _name,
+            exists: true
         });
 
         uniqueIds.push(uid);
+
+        return uid;
     }
 
     function buy(bytes32 _uid, uint _numOfItems, string calldata _address) external {
@@ -91,7 +93,7 @@ contract SomeShop {
             bytes32 currenId = uniqueIds[i];
             Item storage currentItem = items[currenId];
 
-            stockItems[counter] = Item({
+            stockItems[counter] = ItemInStock({
                 uid: currenId,
                 price: currentItem.price,
                 quantity: currentItem.quantity,

@@ -65,7 +65,7 @@ abstract contract ERC20 is IERC20, IERC20Metadata {
     }
 
     function _transfer(address from, address to, uint256 value) internal {
-        require(from != address(0) && to != address(0))
+        require(from != address(0) && to != address(0));
 
         _update(from, to, value);
     }

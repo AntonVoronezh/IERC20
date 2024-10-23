@@ -18,7 +18,7 @@ contract TokenExchange {
         owner = msg.sender;
     }
 
-    function buy() pubic payable {
+    function buy() public payable {
         uint amount  = msg.value; // wei
 
         require(amount >= 1);
@@ -30,7 +30,7 @@ contract TokenExchange {
         token.transfer(msg.sender, amount);
     }
 
-    function sell(uint _amount) pubic {
+    function sell(uint _amount) public {
         require(address(this).balance >= _amount);
 
         require(token.allowance(msg.sender, address(this)) >= _amount);
