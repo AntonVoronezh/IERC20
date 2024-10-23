@@ -40,12 +40,28 @@ describe("TokenExchange", function () {
   });
 
   it("should allow to sell", async function () {
-    const { abcdf, exch, owner, buyer } = await loadFixture(deploy);
+    const { abcdf, exch, buyer } = await loadFixture(deploy);
 
-    const tokensInStock = 3n;
-    const tokensWithDecimals = await withDecimals(abcdf, tokensInStock);
+    const ownedTokens = 2n;
+    const tokensWithDecimals = await withDecimals(abcdf, ownedTokens);
 
+    const transferTx = await abcdf.transfer(buyer.address, await withDecimals(abcdf, ownedTokens));
+    await transferTx.wait();
 
+    const topUpTx = await exch.topUp({value: ethers.parseEther("5")});
+    await topUpTx.wait();
+
+    const tokensToSell = 1n;
+    const value  = ethers.parseEther(tokensToSell.toString());
+
+    const approveTx = await abcdf.connect(buyer).approve(exch.target, value);
+    await approveTx.wait();
+
+    const sellTx = await exch.connect(buyer).sell(value);
+    await sellTx.wait();
+
+    await expect(sellTx).to.changeEtherBalances([buyer, exch], [value, -value]);
+    await expect(sellTx).to.changeTokenBalances(abcdf, [exch, buyer], [value, -value]);
   });
 
   async function withDecimals(token: ABCDFToken, value: bigint): Promise<bigint> {

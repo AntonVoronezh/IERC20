@@ -31,9 +31,9 @@ contract TokenExchange {
     }
 
     function sell(uint _amount) public {
-        require(address(this).balance >= _amount);
+        require(address(this).balance >= _amount, "222");
 
-        require(token.allowance(msg.sender, address(this)) >= _amount);
+        require(token.allowance(msg.sender, address(this)) >= _amount, "111");
 
         token.transferFrom(msg.sender, address(this), _amount);
 
@@ -42,8 +42,7 @@ contract TokenExchange {
         require(ok, "cant send funds");
     }
 
-    function topUp(uint _amount) external payable onlyOwner {
-
+    function topUp() external payable onlyOwner {
     }
 
     receive() external payable {
